@@ -21,6 +21,12 @@ package net.cworks.appio;
  */
 public class App {
 
+    /**
+     * A Router contains Middleware and Routes and can be thought of as a mini-application
+     * capable of performing Middleware and Routing functions and every App has a built-in Router.
+     */
+    private Router router;
+
     public App() {
 
     }
@@ -200,13 +206,11 @@ public class App {
 
     }
 
-
-
-
-
-
-
-
-
-
+    /**
+     * Creation method for constructing a new Router instance
+     * @return
+     */
+    public static Router router() {
+        return null;
+    }
 }

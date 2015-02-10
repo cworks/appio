@@ -1,10 +1,61 @@
-/**
- * Created by comartin on 2/10/2015.
- */
 package net.cworks.appio;
 
 public class AppTest {
 
+    public void testSingleMiddleware() {
+        App app = new App();
+        app.use(new Middleware() {
+            @Override
+            public void called(Request request, Response response, Middleware next) {
+                System.out.println("Called for every request to the App.");
+            }
+        });
+    }
+
+    public void testRouterAsMiddleware() {
+        App app = new App();
+        Router router = App.router();
+        router.get("/", new Callback() {
+            @Override
+            public void called(Request request, Response response) {
+                System.out.println("Called for every request to the App.");
+            }
+        });
+        app.use(router);
+    }
+
+    public void testAppAsMiddleware() {
+        App parent = new App();
+        App child = new App();
+        child.get("/version", new Callback() {
+            @Override
+            public void called(Request request, Response response) {
+
+            }
+        });
+        parent.use(child);
+    }
+
+    public void testSeriesOfMiddleware() {
+        Router router1 = App.router();
+        router1.get("/series", new Callback() {
+            @Override
+            public void called(Request request, Response response) {
+
+            }
+        });
+
+        Router router2 = App.router();
+        router2.get("/series", new Callback() {
+            @Override
+            public void called(Request request, Response response) {
+
+            }
+        });
+        App app = new App();
+        // You can specify more than one Middleware function at the same path
+        app.use(router1, router2);
+    }
 
     public void testSequentially() {
         App app = new App("main");
@@ -39,24 +90,24 @@ public class AppTest {
     }
 
     public void testOnMountEvent() {
-
-        App adminApp = new App("admin");
-        adminApp.onMount(new MountEvent() {
+        App app   = new App("main");  // parent-app
+        App admin = new App("admin"); // sub-app
+        admin.onMount(new MountEvent() {
             @Override
             public void mounted(App parent) {
                 System.out.println("adminApp mounted to parent: " + parent.toString());
             }
         });
 
-        adminApp.get("/", new Callback() {
+        admin.get("/", new Callback() {
             @Override
             public void called(Request request, Response response) {
                 response.send("Welcome to the Admin API");
             }
         });
 
-        App mainApp = new App("main");
-        mainApp.use("/admin", adminApp);
+        // a "sub-app" is an instance which may be used for handling the request to a Route
+        app.use("/admin", admin); // mount the sub-app
     }
 
     public void testCreateRouter() {
@@ -72,8 +123,8 @@ public class AppTest {
         });
 
         // handle any requests that ends in /events and depends on where the router is used
-        router.get("/events", new Middleware() {
-            public void called(Request request, Response response, Middleware next) {
+        router.get("/events", new Callback() {
+            public void called(Request request, Response response) {
                 System.out.println("Invoked for any requests that ends in /events.");
             }
         });
